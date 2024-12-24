@@ -1,0 +1,68 @@
+#ifndef _COMPUTING_CORE_H
+#define _COMPUTING_CORE_H
+
+#include "systemc.h"
+#include <cinttypes>
+
+SC_MODULE(ALU_linear) {
+  public:
+    sc_in<bool> clk_i;
+    sc_in<bool> data_i;
+    sc_in<float> sum;
+    sc_in<float> weight;
+    sc_in<float> neuron;
+
+    sc_out<float> res_o;
+    sc_out<bool> ready_o;
+
+    SC_HAS_PROCESS(ALU_linear);
+    ALU_linear(sc_module_name nm);
+    ~ALU_linear(){};
+
+    void calculate();
+};
+
+SC_MODULE(ComputingCore) {
+  public:
+    enum State {
+        IDLE = 0,
+        READING,
+        COMPUTING_SUM,
+        COMPUTING_ACTIVATION,
+        WRITING
+    };
+
+    sc_in<bool> clk_i;
+    sc_in<bool> is_task_i;
+    sc_in<uint32_t> this_neuron_cords_i;
+    sc_in<uint32_t> prev_layer_address_i;
+    sc_in<uint32_t> result_address_i;
+
+    sc_out<uint32_t> output_address_o;
+    sc_out<uint64_t> output_data_o;
+    sc_out<bool> is_working_o;
+
+    SC_HAS_PROCESS(ComputingCore);
+    ComputingCore(sc_module_name nm);
+    ~ComputingCore(){};
+
+    void fsm_controller();
+    void wait_task();
+    void read_ram_layer();
+    void compute_sum();
+    void compute_activation();
+    void write_ram_result();
+
+  private:
+    float line_func_add(float sum, float w, float n_v);
+
+    sc_logic rd_completed;
+
+    uint8_t local_mem[1024];
+    uint32_t this_neuron_cords;
+    uint32_t prev_layer_address;
+    uint32_t result_address;
+    State state;
+};
+
+#endif
