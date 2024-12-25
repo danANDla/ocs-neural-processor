@@ -1,5 +1,6 @@
 #include "testbenches.h"
 #include "netreader.h"
+#include "computing_core.h"
 
 void NetReaderTest::rst_test() {
 	wait(20, SC_NS);
@@ -45,7 +46,8 @@ void NetReaderTest::write_read_test() {
 
 void netreadertest(){
     sc_clock clk("clk", sc_time(10, SC_NS));
-	sc_signal_rv<64> data_i, data_o;
+	sc_signal_rv<32> data_i;
+	sc_signal<uint32_t> data_o;
 	sc_signal_rv<32> address;
 	sc_signal<bool> rst;
 	sc_signal<bool> rd_o;
@@ -92,5 +94,80 @@ void netreadertest(){
     sc_trace(wf, netreadertest.wr_req1, "wr_req1");
 
     sc_start(sc_time(100, SC_NS));
+    sc_close_vcd_trace_file(wf);
+}
+
+void BenchComputingNetReader::computing_core_readlayer_test() {
+	wait(20, SC_NS);
+	rst.write(true);
+	wait(12, SC_NS);
+	rst.write(false);
+
+	wait(8, SC_NS);
+	is_task.write(true);
+	wait(8, SC_NS);
+	is_task.write(false);
+}
+
+void netreader_computing_test(){
+    sc_clock clk("clk", sc_time(10, SC_NS));
+	sc_signal_rv<32> address;
+	sc_signal_rv<32> data_i;
+	sc_signal<uint32_t> data_o;
+	sc_signal<bool> rst;
+	sc_signal<bool> task;
+	sc_signal<bool> rd_o, wr_o, rd_req1, wr_req1, rd_req2, wr_req2;
+
+	sc_signal<uint32_t> cords;
+	cords.write(0x00020002);
+	sc_signal<uint32_t> prev_layer;
+	prev_layer.write(0x000007ff);
+
+	BenchComputingNetReader bench("bench");
+	bench.rst(rst);
+	bench.is_task(task);
+
+
+	NetReader reader("reader");
+	reader.clk_i(clk);
+	reader.rst_i(rst);
+	reader.data_i(data_i);
+	reader.data_o(data_o);
+	reader.address_i(address);
+	reader.rd_o(rd_o);
+	reader.wr_o(wr_o);
+	reader.read_request1(rd_req1);
+	reader.write_request1(wr_req1);
+	reader.read_request2(rd_req2);
+	reader.write_request2(wr_req2);
+
+	ComputingCore computing("computing");
+	computing.clk_i(clk);
+	computing.rst_i(rst);
+	computing.is_task_i(task);
+	computing.this_neuron_cords_i(cords);
+	computing.prev_layer_address_i(prev_layer);
+
+	computing.ram_addr(address);
+	computing.ram_data_read(data_o);
+	computing.ram_data_write(data_i);
+	computing.ram_read_req(rd_req1);
+	computing.ram_write_req(wr_req1);
+	computing.ram_rd_i(rd_o);
+	computing.ram_wr_i(wr_o);
+
+    sc_trace_file *wf = sc_create_vcd_trace_file("wave");
+    sc_trace(wf, clk, "clk");
+    sc_trace(wf, rst, "rst");
+	sc_trace(wf, task, "task");
+    sc_trace(wf, reader.rd_o, "rd_o");
+    sc_trace(wf, reader.wr_o, "wr_o");
+    sc_trace(wf, reader.address_i, "addr");
+    sc_trace(wf, reader.data_i, "data_to_read");
+    sc_trace(wf, reader.data_o, "data_to_write");
+    sc_trace(wf, reader.rd_o, "rd_req1");
+    sc_trace(wf, reader.wr_o, "wr_req1");
+
+    sc_start(sc_time(1000, SC_NS));
     sc_close_vcd_trace_file(wf);
 }

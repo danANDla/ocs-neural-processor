@@ -17,7 +17,7 @@ void NetReader::execute() {
 		if(rst_i.read()) {
 			rd_o.write(false);
 			wr_o.write(false);
-			data_o.write(sc_lv<64>('Z'));
+			data_o.write(0);
 		} else {
 			if(!(rd_o.read() || wr_o.read())) {
 				if(read_request1.read() || write_request1.read()) {
@@ -35,7 +35,7 @@ void NetReader::handle_read_req() {
 	data_o.write(rd_addr < MEM_SIZE ? m_data[rd_addr] : 0);
 	wait();
 	rd_o.write(false);
-	data_o.write(sc_lv<64>('Z'));
+	data_o.write(0);
 }
 
 void NetReader::handle_write_req() {

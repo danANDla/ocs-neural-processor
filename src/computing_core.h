@@ -32,15 +32,17 @@ SC_MODULE(ComputingCore) {
         WRITING
     };
 
-    sc_in<bool> clk_i;
-    sc_in<bool> is_task_i;
+    sc_in<bool> clk_i, rst_i, is_task_i;
     sc_in<uint32_t> this_neuron_cords_i;
     sc_in<uint32_t> prev_layer_address_i;
-    sc_in<uint32_t> result_address_i;
 
-    sc_out<uint32_t> output_address_o;
-    sc_out<uint64_t> output_data_o;
-    sc_out<bool> is_working_o;
+	sc_in<bool> ram_rd_i;
+	sc_in<bool> ram_wr_i;
+	sc_out<bool> ram_read_req;
+	sc_out<bool> ram_write_req;
+	sc_out_rv<32> ram_addr;
+	sc_out_rv<32> ram_data_write;
+	sc_in<uint32_t> ram_data_read;
 
     SC_HAS_PROCESS(ComputingCore);
     ComputingCore(sc_module_name nm);
@@ -53,10 +55,12 @@ SC_MODULE(ComputingCore) {
     void compute_activation();
     void write_ram_result();
 
+	int8_t get_layer_and_neurons_n(uint32_t& l, uint32_t& n);
+	void read_ram_word(uint32_t addr, uint32_t& word);
+
   private:
     float line_func_add(float sum, float w, float n_v);
-
-    sc_logic rd_completed;
+	sc_signal<bool> rd_completed;
 
     uint8_t local_mem[1024];
     uint32_t this_neuron_cords;

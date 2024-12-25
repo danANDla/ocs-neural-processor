@@ -5,15 +5,15 @@
 #include <cinttypes>
 
 #define CONCURRENT_DEVICES_LOG 2
-#define MEM_SIZE 100
+#define MEM_SIZE 2048
 
 SC_MODULE(NetReader) {
   public:
     sc_in<bool> clk_i;
 	sc_in<bool> rst_i;
-	sc_in_rv<64> data_i;
+	sc_in_rv<32> data_i;
 	sc_in_rv<32> address_i;
-	sc_out_rv<64> data_o;
+	sc_out<uint32_t> data_o;
     sc_out<bool> rd_o;
     sc_out<bool> wr_o;
 
@@ -25,13 +25,20 @@ SC_MODULE(NetReader) {
         sensitive << clk_i.pos();
         dont_initialize();
 
-		for(uint64_t& d: m_data) {
-			d = 0x1010101010101010;
+		m_data[0] = 4;
+		m_data[1] = 49;
+		m_data[2] = 24;
+		for(uint16_t i = 0; i < 24*49; ++i) {
+			m_data[3+i] = 0x10101010;
+		}
+
+		for(uint16_t i = 0; i < 49; ++i) {
+			m_data[MEM_SIZE - 1 - i] = 0xffff;
 		}
     };
 
   private:
-    uint64_t m_data[MEM_SIZE];
+    uint32_t m_data[MEM_SIZE];
 
 	void handle_req(sc_bv<CONCURRENT_DEVICES_LOG> selector);
 	void handle_write_req();

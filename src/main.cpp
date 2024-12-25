@@ -1,6 +1,6 @@
 #include "testbenches.h"
 
 int sc_main(int argc, char *argv[]) { 
-	netreadertest();
+	netreader_computing_test();
 	return 0; 
 }
