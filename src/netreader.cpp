@@ -17,7 +17,7 @@ void NetReader::execute() {
 		if(rst_i.read()) {
 			rd_o.write(false);
 			wr_o.write(false);
-			data_o.write(sc_lv<32>('Z'));
+			data_o.write(sc_lv<64>('Z'));
 		} else {
 			if(!(rd_o.read() || wr_o.read())) {
 				if(read_request1.read() || write_request1.read()) {
@@ -30,12 +30,22 @@ void NetReader::execute() {
 }
 
 void NetReader::handle_read_req() {
+	rd_o.write(true);
 	uint64_t rd_addr = address_i.read().to_uint64();
 	data_o.write(rd_addr < MEM_SIZE ? m_data[rd_addr] : 0);
 	wait();
-	data_o.write(sc_lv<32>('Z'));
+	rd_o.write(false);
+	data_o.write(sc_lv<64>('Z'));
 }
 
 void NetReader::handle_write_req() {
-	
+	wr_o.write(true);
+	uint64_t rd_addr = address_i.read().to_uint64();
+	uint64_t data = data_i.read().to_uint64();
+
+	if(rd_addr < MEM_SIZE) {
+		m_data[rd_addr] = data;
+	}
+	wait();
+	wr_o.write(false);
 }

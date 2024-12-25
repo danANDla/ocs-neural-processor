@@ -5,15 +5,17 @@
 
 SC_MODULE(NetReaderTest) {
   public:
-    sc_in_rv<64> data_i;
-    sc_out_rv<64> data_o;
+    sc_in_rv<64> data_to_read;
+    sc_out_rv<64> data_to_write;
     sc_out_rv<32> address;
-	sc_out<bool> rst;
+	sc_out<bool> rst, wr_req1, rd_req1, wr_req2, rd_req2;
 
-    SC_CTOR(NetReaderTest) { SC_THREAD(_test); }
+    SC_CTOR(NetReaderTest) { SC_THREAD(write_read_test); }
 
   private:
-    void _test();
+    void rst_test();
+	void read_test();
+	void write_read_test();
 };
 
 void netreadertest();
