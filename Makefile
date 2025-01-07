@@ -8,7 +8,7 @@ FLAGS           = -g -Wall -pedantic -Wno-long-long \
                  -DSC_INCLUDE_DYNAMIC_PROCESSES -fpermissive
 LDFLAGS         = -lsystemc -lm
 
-SRCS = src/testbenches.cpp src/computing_core.cpp src/netreader.cpp src/main.cpp
+SRCS = src/testbenches.cpp src/computing_core.cpp src/netreader.cpp src/main.cpp src/data_reader.cpp
 OBJS = $(SRCS:.cpp=.o)
 	
 main:

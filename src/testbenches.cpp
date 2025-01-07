@@ -45,6 +45,7 @@ void NetReaderTest::write_read_test() {
 }
 
 void netreadertest(){
+
     sc_clock clk("clk", sc_time(10, SC_NS));
 	sc_signal_rv<32> data_i;
 	sc_signal<uint32_t> data_o;
@@ -110,6 +111,8 @@ void BenchComputingNetReader::computing_core_readlayer_test() {
 }
 
 void netreader_computing_test(){
+	NNetwork good_net = read_network_from_file("/home/danandla/BOTAY/byk_ocs/labs/lab1/networks/geometra.txt");
+
     sc_clock clk("clk", sc_time(10, SC_NS));
 	sc_signal_rv<32> address;
 	sc_signal_rv<32> data_i;
@@ -140,6 +143,7 @@ void netreader_computing_test(){
 	reader.write_request1(wr_req1);
 	reader.read_request2(rd_req2);
 	reader.write_request2(wr_req2);
+	reader.write_net_to_mem(&good_net);
 
 	ComputingCore computing("computing");
 	computing.clk_i(clk);
@@ -168,6 +172,6 @@ void netreader_computing_test(){
     sc_trace(wf, reader.rd_o, "rd_req1");
     sc_trace(wf, reader.wr_o, "wr_req1");
 
-    sc_start(sc_time(1000, SC_NS));
+    sc_start(sc_time(100000, SC_NS));
     sc_close_vcd_trace_file(wf);
 }

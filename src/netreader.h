@@ -1,6 +1,7 @@
 #ifndef _NET_READER_H
 #define _NET_READER_H
 
+#include "data_reader.hpp"
 #include "systemc.h"
 #include <cinttypes>
 
@@ -25,17 +26,12 @@ SC_MODULE(NetReader) {
         sensitive << clk_i.pos();
         dont_initialize();
 
-		m_data[0] = 4;
-		m_data[1] = 49;
-		m_data[2] = 24;
-		for(uint16_t i = 0; i < 24*49; ++i) {
-			m_data[3+i] = 0x10101010;
-		}
-
 		for(uint16_t i = 0; i < 49; ++i) {
 			m_data[MEM_SIZE - 1 - i] = 0xffff;
 		}
     };
+
+	int8_t write_net_to_mem(const NNetwork* const net);
 
   private:
     uint32_t m_data[MEM_SIZE];
@@ -45,5 +41,6 @@ SC_MODULE(NetReader) {
 	void handle_read_req();
 	void execute();
 };
+
 
 #endif // _NET_READER_H

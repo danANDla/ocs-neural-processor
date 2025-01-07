@@ -73,10 +73,11 @@ void ComputingCore::read_ram_layer() {
 
 	for(uint32_t i = 0; i < prev_n; ++i) {
 		uint32_t edge;
-		read_ram_word(offset + prev_n * this_layer_neuron_id + i, edge);
 		uint32_t neuron;
+		read_ram_word(offset + prev_n * this_layer_neuron_id + i, edge);
 		read_ram_word(prev_layer_address_i - i, neuron);
-		std::cout << "read edge: " << edge << " and nueron: " << neuron << "\n";
+		float floated_edge = (float) *((float*)&edge);
+		std::cout << "read edge: " << floated_edge << " and nueron: " << neuron << "\n";
 	}
 
 }
