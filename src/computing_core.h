@@ -60,12 +60,15 @@ SC_MODULE(ComputingCore) {
 
   private:
     float line_func_add(float sum, float w, float n_v);
-	sc_signal<bool> rd_completed;
+	sc_signal<bool> rd_completed, sum_completed, activation_completed, wr_completed;
 
-    uint8_t local_mem[1024];
+    uint8_t local_mem[2048];
     uint32_t this_neuron_cords;
     uint32_t prev_layer_address;
     uint32_t result_address;
+
+	#define NUMBER_OF_NEURONS *((uint32_t*) ((uint8_t*) local_mem + 0));
+
     State state;
 };
 

@@ -69,3 +69,18 @@ int8_t write_net_to_mem(void* const _mem, const NNetwork* const net) {
 	return 1;
 }
 
+int8_t write_image_to_mem(void* const _mem, const std::string fname, const size_t first_addr) {
+	uint32_t* mem =  (uint32_t*) _mem;
+	size_t offset = first_addr;
+
+	std::ifstream image;
+	image.open(fname);
+
+	for(size_t i = 0; i < 49; ++i) {
+		uint8_t pixel;
+		image >> pixel;
+		mem[offset] = (uint32_t) pixel;
+		offset--;
+	}
+	return 1;
+}

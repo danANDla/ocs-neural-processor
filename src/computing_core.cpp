@@ -52,7 +52,6 @@ void ComputingCore::read_ram_word(uint32_t addr, uint32_t& word) {
 	ram_addr.write(sc_lv<32>('Z'));
 	ram_read_req.write(false);
 	ram_write_req.write(false);
-	rd_completed.write(true);
 }
 
 void ComputingCore::read_ram_layer() {
@@ -71,15 +70,47 @@ void ComputingCore::read_ram_layer() {
 
 	printf("layer %u, neuron_id %u, prev_layer_addr %u, neurons_in_this %u, neurons_in_prev %u\n", layer, this_layer_neuron_id, prev_layer_address, this_n, prev_n);
 
+	*((uint32_t*)local_mem) = prev_n;
+	offset = 4;
+
 	for(uint32_t i = 0; i < prev_n; ++i) {
 		uint32_t edge;
 		uint32_t neuron;
 		read_ram_word(offset + prev_n * this_layer_neuron_id + i, edge);
 		read_ram_word(prev_layer_address_i - i, neuron);
+
+		*((uint32_t*) ((uint8_t*) local_mem + offset)) = edge;
+		offset += 4;
+		*((uint32_t*) ((uint8_t*) local_mem + offset)) = neuron;
+		offset += 4;
+
 		float floated_edge = (float) *((float*)&edge);
 		std::cout << "read edge: " << floated_edge << " and nueron: " << neuron << "\n";
 	}
 
+	rd_completed.write(true);
+}
+
+void ComputingCore::compute_sum() {
+	uint32_t prev_n, offset;
+
+	prev_n = *((uint32_t*)local_mem);
+	offset = 4;
+
+	for(uint32_t i = 0; i < prev_n; ++i) {
+		uint32_t edge =	*((uint32_t*) ((uint8_t*) local_mem + offset)) ;
+		offset += 4;
+		uint32_t neuron = *((uint32_t*) ((uint8_t*) local_mem + offset)) ;
+		offset += 4;
+
+		float floated_edge = (float) *((float*)&edge);
+		std::cout << "LOCAL: read edge: " << floated_edge << " and nueron: " << neuron << "\n";
+	}
+	sum_completed.write(true);
+}
+
+void ComputingCore::compute_activation() {
+	activation_completed.write(true);
 }
 
 void ComputingCore::fsm_controller() {
@@ -95,20 +126,31 @@ void ComputingCore::fsm_controller() {
 					std::cout<< "got task\n";
 					this_neuron_cords = this_neuron_cords_i;
 					prev_layer_address = prev_layer_address_i;
-					state = READING;
 					rd_completed.write(false);
+					state = READING;
 					read_ram_layer();
 				}
 				break;
 
 			case READING:
 				if(rd_completed.read()) { // ожидаем успешного прочтения через общую шину
-					state = COMPUTING_SUM;	
 					std::cout << "completed reading\n";
+					sum_completed.write(false);
+					state = COMPUTING_SUM;	
+					compute_sum();
+				} else {
+					std::cout << "wait_read\n";
 				}
 				break;
 
 			case COMPUTING_SUM:
+				if(sum_completed.read()) {
+					std::cout << "sum completed\n";
+					state = COMPUTING_ACTIVATION;	
+					compute_activation();
+				} else {
+					std::cout << "wait_sum\n";
+				}
 
 				break;
 
