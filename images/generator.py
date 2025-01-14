@@ -92,6 +92,7 @@ def write_geometra_file(fname, tdata):
 def show_figure_from_train_set(sample, wait: bool):
     print(sample)
     result = sample[-3:]
+    print(result)
     answer = ""
     if result[0] == 1:
         answer = "Circle"
@@ -115,8 +116,9 @@ def show_figure_from_train_set(sample, wait: bool):
     cv.destroyWindow('i')
 
 def show_figure_from_file(fname: str):
-    with open(fname, encoding="UTF-8") as img:
-        l = img.readline().split()
+    with open('generated/' + fname, encoding="UTF-8") as img:
+        l = img.readline().strip()
+        l = list(l)
         img = []
         for i in l:
             img.append(int(i))
