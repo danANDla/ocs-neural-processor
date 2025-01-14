@@ -36,9 +36,9 @@ void ComputingCore::read_ram_layer() {
 		offset++;
     }
 
-    printf("layer %u, neuron_id %u, prev_layer_addr %u, neurons_in_this %u, "
-           "neurons_in_prev %u, edges_address_start %u, result_addr %u\n",
-           layer, this_layer_neuron_id, prev_layer_address, this_n, prev_n, offset, result_address);
+    /*printf("layer %u, neuron_id %u, prev_layer_addr %u, neurons_in_this %u, "*/
+    /*       "neurons_in_prev %u, edges_address_start %u, result_addr %u\n",*/
+    /*       layer, this_layer_neuron_id, prev_layer_address, this_n, prev_n, offset, result_address);*/
 
     *(local_mem) = prev_n;
     uint32_t local_offset = 1;
@@ -84,12 +84,11 @@ void ComputingCore::compute_sum() {
         while (alu_ready.read() != true)
             wait();
 
-		printf("[%u] ", i);
-        std::cout << "read edge: " << floated_edge
-                  << " and neuron: " << floated_neuron << " and sum "
-                  << alu_res.read() << "\n";
+		/*printf("[%u] ", i);*/
+		/*      std::cout << "read edge: " << floated_edge*/
+		/*                << " and neuron: " << floated_neuron << " and sum "*/
+		/*                << alu_res.read() << "\n";*/
     }
-	printf("\n");
     activation = alu_res.read();
     sum_completed.write(true);
 }
@@ -165,7 +164,7 @@ void ComputingCore::fsm_controller() {
             break;
         case WRITING:
             if (wr_completed.read()) {
-                printf("TASK[%u][%u] IS COMPLETED! res of neuron: %f\n", this_neuron_cords >> 16, this_neuron_cords & 0x0000ffff, activation);
+                // printf("TASK[%u][%u] IS COMPLETED! res of neuron: %f\n", this_neuron_cords >> 16, this_neuron_cords & 0x0000ffff, activation);
                 is_finished.write(true);
                 state = IDLE;
             }

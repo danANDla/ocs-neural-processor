@@ -56,12 +56,15 @@ void BenchComputingNetReader::computing_core_readlayer_test() {
 }
 
 void control_test(){
+	std::cout << "number of cores: "  << CORE_NUMBER << "\n";
+
 	NNetwork good_net = read_network_from_file("/home/danandla/BOTAY/byk_ocs/labs/lab1/networks/geometra.txt");
 	std::vector<uint8_t> img = read_image_from_file("/home/danandla/BOTAY/byk_ocs/labs/lab3/ocs-neural-processor/images/generated/i1");
 
     sc_clock clk("clk", sc_time(10, SC_NS));
 	sc_signal<bool> rst;
 	sc_signal<bool> task;
+	sc_signal<bool> finished;
 	BenchComputingNetReader bench("bench");
 	bench.rst(rst);
 	bench.is_task(task);
@@ -72,6 +75,7 @@ void control_test(){
 	control.computing_mode_i(task);
 	control.shared_mem.write_image_to_mem(img);
 	control.shared_mem.write_net_to_mem(&good_net);
+	control.finish(finished);
 
 
     sc_trace_file *wf = sc_create_vcd_trace_file("wave");

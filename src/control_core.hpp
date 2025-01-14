@@ -27,6 +27,7 @@ SC_MODULE(ControlCore) {
     };
 
     sc_in<bool> clk_i, rst_i, computing_mode_i;
+	sc_out<bool> finish;
 
     SC_HAS_PROCESS(ControlCore);
     ControlCore(sc_module_name nm);

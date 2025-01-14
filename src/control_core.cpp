@@ -1,6 +1,7 @@
 #include "control_core.hpp"
 #include "netreader.h"
 #include <cstdio>
+#include <sysc/kernel/sc_simcontext.h>
 
 ControlCore::ControlCore(sc_module_name mn)
     : sc_module(mn), clk_i("clk_i"), rst_i("clk_i"),
@@ -27,7 +28,6 @@ ControlCore::ControlCore(sc_module_name mn)
     for (uint8_t i = 0; i < CORE_NUMBER; ++i) {
 
         std::sprintf(buff, "core%u", i);
-        std::cout << buff << "\n";
 
         shared_mem.read_reqs[i + 1](ram_rd_requests[i + 1]);
         shared_mem.write_reqs[i + 1](ram_wr_requests[i + 1]);
@@ -42,11 +42,7 @@ ControlCore::ControlCore(sc_module_name mn)
         core[i]->res_address_i(resulting_neuron_addr);
         core[i]->ram_addr(ram_address);
         core[i]->ram_data_read(ram_data_o);
-        core[i]->ram_data_write(ram_data_i);
-        core[i]->ram_read_req(ram_rd_requests[i + 1]);
-        core[i]->ram_write_req(ram_wr_requests[i + 1]);
-        core[i]->ram_rd_i(ram_rd_o);
-        core[i]->ram_wr_i(ram_wr_o);
+        core[i]->ram_data_write(ram_data_i); core[i]->ram_read_req(ram_rd_requests[i + 1]); core[i]->ram_write_req(ram_wr_requests[i + 1]); core[i]->ram_rd_i(ram_rd_o); core[i]->ram_wr_i(ram_wr_o);
 		core[i]->ram_discrete(ram_discretes[i + 1]);
         core[i]->is_finished(cores_finished[i]);
     }
@@ -108,10 +104,10 @@ void ControlCore::create_task_q() {
     }
 
     for (uint16_t i = 0; i < tasks; ++i) {
-        ComputingTask t = {.layer = done_layers,
-                           .id_in_layer = i,
-                           .result_address = MEM_SIZE - 1 - result_offset - i,
-                           .prev_layer_addr = MEM_SIZE - 1 - prev_l_addr};
+        ComputingTask t = {done_layers,
+                           i,
+                           MEM_SIZE - 1 - result_offset - i,
+                           MEM_SIZE - 1 - prev_l_addr};
         /*std::cout << done_layers << " " << i << " " << result_offset << " "*/
         /*          << prev_l_addr << std::endl;*/
         q.push(t);
@@ -188,6 +184,7 @@ void ControlCore::fsm_controller() {
                 read_net();
                 done_layers = 1;
                 state = CHECKING_LAYER;
+				finish.write(false);
             }
             break;
         case CHECKING_LAYER:
@@ -211,9 +208,18 @@ void ControlCore::fsm_controller() {
             break;
         case CHECKING_ANY_TASK_IN_Q:
             if (q.empty()) {
-				done_layers++;
-                state = CHECKING_LAYER;
-				// std::cout << "CHECK NEW LAYER";
+				bool is_all_free = true;
+				for(size_t i = 0; i < CORE_NUMBER; ++i) {
+					if(core[i]->is_finished.read() == false) {
+						is_all_free = false;
+					}
+				}
+				if(is_all_free) {
+					done_layers++;
+					state = CHECKING_LAYER;
+					// std::cout << "CHECK NEW LAYER";
+				}
+
             } else {
                 state = ASSIGNING_TASK_TO_COMPUTING_CORE;
 				assign_task();
@@ -221,9 +227,11 @@ void ControlCore::fsm_controller() {
             break;
         case ASSIGNING_TASK_TO_COMPUTING_CORE:
             state = WAITING_FREE_COMPUTING_CORE;
+			finish.write(true);
             break;
         case SHOWING_RESULT:
 			show_result();
+			std::cout << sc_time_stamp() << "\n"; 
 			wait();
 			state = IDLE;
             break;
