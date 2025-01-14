@@ -5,18 +5,18 @@ int8_t ComputingCore::get_layer_and_neurons_n(uint32_t &layer, uint32_t &n) {
 }
 
 void ComputingCore::read_ram_word(uint32_t addr, uint32_t &word) {
-    while (ram_rd_i.read() || ram_wr_i.read()) {
+    while (!(ram_discrete.read() && !ram_wr_i.read() && !ram_rd_i.read())) {
         wait();
     }
     ram_read_req.write(true);
     ram_write_req.write(false);
     ram_addr.write(addr);
-    while (!ram_rd_i.read()) {
-        wait();
-    }
+    wait();
+	wait();
     word = ram_data_read.read();
 
     ram_addr.write(sc_lv<32>('Z'));
+    ram_data_write.write(sc_lv<32>('Z'));
     ram_read_req.write(false);
     ram_write_req.write(false);
 }
@@ -36,9 +36,9 @@ void ComputingCore::read_ram_layer() {
 		offset++;
     }
 
-    /*printf("layer %u, neuron_id %u, prev_layer_addr %u, neurons_in_this %u, "*/
-    /*       "neurons_in_prev %u, edges_address_start %u, result_addr %u\n",*/
-    /*       layer, this_layer_neuron_id, prev_layer_address, this_n, prev_n, offset, result_address);*/
+    printf("layer %u, neuron_id %u, prev_layer_addr %u, neurons_in_this %u, "
+           "neurons_in_prev %u, edges_address_start %u, result_addr %u\n",
+           layer, this_layer_neuron_id, prev_layer_address, this_n, prev_n, offset, result_address);
 
     *(local_mem) = prev_n;
     uint32_t local_offset = 1;
@@ -47,7 +47,7 @@ void ComputingCore::read_ram_layer() {
         uint32_t edge;
         uint32_t neuron;
         read_ram_word(offset + this_n * i + this_layer_neuron_id, edge);
-        read_ram_word(prev_layer_address_i - i, neuron);
+        read_ram_word(prev_layer_address - i, neuron);
 
         *(local_mem + local_offset) = edge;
         local_offset += 1;
@@ -84,10 +84,12 @@ void ComputingCore::compute_sum() {
         while (alu_ready.read() != true)
             wait();
 
-        /*std::cout << "read edge: " << floated_edge*/
-        /*          << " and neuron: " << floated_neuron << " and sum "*/
-        /*          << alu_res.read() << "\n";*/
+		printf("[%u] ", i);
+        std::cout << "read edge: " << floated_edge
+                  << " and neuron: " << floated_neuron << " and sum "
+                  << alu_res.read() << "\n";
     }
+	printf("\n");
     activation = alu_res.read();
     sum_completed.write(true);
 }
@@ -99,7 +101,7 @@ void ComputingCore::compute_activation() {
 
 void ComputingCore::write_ram_result() {
 
-    while (ram_rd_i.read() || ram_wr_i.read()) {
+    while (!(ram_discrete.read() && !ram_wr_i.read() && !ram_rd_i.read())) {
         wait();
     }
 

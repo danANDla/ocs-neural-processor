@@ -64,6 +64,7 @@ SC_MODULE(ControlCore) {
 	sc_signal<bool> ram_rd_o, ram_wr_o;
 	sc_signal<bool> ram_wr_requests[CORE_NUMBER + 1];
 	sc_signal<bool> ram_rd_requests[CORE_NUMBER + 1];
+	sc_signal<bool> ram_discretes[CORE_NUMBER + 1];
 
 	std::vector<uint16_t> layers;
 	std::queue<ComputingTask> q;

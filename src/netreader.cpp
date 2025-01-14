@@ -2,11 +2,22 @@
 #include <iostream>
 
 void NetReader::poll_requests() {
-	if(read_reqs[discrete]) {
-		handle_read_req();
-	} else if(write_reqs[discrete]) {
-		handle_write_req();
+	is_your_discrete[discrete].write(true);
+	for(uint16_t i = 0; i < 3; ++i) {
+		if(read_reqs[discrete].read()) {
+			handle_read_req();
+
+			is_your_discrete[discrete].write(false);
+			return;
+		} else if(write_reqs[discrete].read()) {
+			handle_write_req();
+			
+			is_your_discrete[discrete].write(false);
+			return;
+		}
+		wait();
 	}
+	is_your_discrete[discrete].write(false);
 }
 
 void NetReader::execute() {
@@ -16,6 +27,9 @@ void NetReader::execute() {
 			wr_o.write(false);
 			data_o.write(0);
 			discrete = 0;
+			for(uint16_t i = 0; i < CORE_NUMBER + 1; ++i) {
+				is_your_discrete[i].write(false);
+			}
 		} else {
 			if(!(rd_o.read() || wr_o.read())) {
 				poll_requests();

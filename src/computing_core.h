@@ -20,7 +20,7 @@ SC_MODULE(ComputingCore) {
     sc_in<uint32_t> prev_layer_address_i, res_address_i;
     sc_out<bool> is_finished;
 
-    sc_in<bool> ram_rd_i, ram_wr_i;
+    sc_in<bool> ram_rd_i, ram_wr_i, ram_discrete;
     sc_out<bool> ram_read_req, ram_write_req;
     sc_out_rv<32> ram_addr, ram_data_write;
     sc_in<uint32_t> ram_data_read;

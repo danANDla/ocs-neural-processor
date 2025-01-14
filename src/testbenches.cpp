@@ -85,6 +85,7 @@ void control_test(){
     sc_trace(wf, control.shared_mem.data_o, "data_to_write");
     sc_trace(wf, control.shared_mem.read_reqs[0], "rd_req0");
     sc_trace(wf, control.shared_mem.write_reqs[0], "wr_req0");
+	sc_trace(wf, control.shared_mem.is_your_discrete[0], "discrete0");
 
 	for(uint8_t i = 0; i < CORE_NUMBER; ++i) {
 		char buff[100];
@@ -98,6 +99,10 @@ void control_test(){
 		sc_trace(wf, control.shared_mem.read_reqs[i + 1], buff);
 		sprintf(buff, "wr_req%u", i+1);
 		sc_trace(wf, control.shared_mem.write_reqs[i + 1], buff);
+
+
+		sprintf(buff, "discrete%u", i+1);
+		sc_trace(wf, control.shared_mem.is_your_discrete[i + 1], buff);
 	}
 
 

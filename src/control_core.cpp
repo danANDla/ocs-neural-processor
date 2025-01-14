@@ -21,6 +21,7 @@ ControlCore::ControlCore(sc_module_name mn)
 
     shared_mem.read_reqs[0](ram_rd_requests[0]);
     shared_mem.write_reqs[0](ram_wr_requests[0]);
+	shared_mem.is_your_discrete[0](ram_discretes[0]);
 
     char buff[40];
     for (uint8_t i = 0; i < CORE_NUMBER; ++i) {
@@ -28,8 +29,9 @@ ControlCore::ControlCore(sc_module_name mn)
         std::sprintf(buff, "core%u", i);
         std::cout << buff << "\n";
 
-        shared_mem.read_reqs[i](ram_rd_requests[i + 1]);
-        shared_mem.write_reqs[i](ram_wr_requests[i + 1]);
+        shared_mem.read_reqs[i + 1](ram_rd_requests[i + 1]);
+        shared_mem.write_reqs[i + 1](ram_wr_requests[i + 1]);
+		shared_mem.is_your_discrete[i + 1](ram_discretes[i + 1]);
 
         core[i] = new ComputingCore(buff);
         core[i]->clk_i(clk_i);
@@ -45,22 +47,24 @@ ControlCore::ControlCore(sc_module_name mn)
         core[i]->ram_write_req(ram_wr_requests[i + 1]);
         core[i]->ram_rd_i(ram_rd_o);
         core[i]->ram_wr_i(ram_wr_o);
+		core[i]->ram_discrete(ram_discretes[i + 1]);
         core[i]->is_finished(cores_finished[i]);
     }
 }
 
 void ControlCore::read_ram_word(uint32_t addr, uint32_t &word) {
-    while (ram_rd_o.read() || ram_wr_o.read()) {
+
+    while (!(ram_discretes[0].read() && !ram_wr_o.read() && !ram_rd_o.read())) {
         wait();
     }
     ram_address.write(addr);
     ram_rd_requests[0].write(true);
     ram_wr_requests[0].write(false);
-    while (!ram_rd_o.read()) {
-        wait();
-    }
+    wait();
+    wait();
     word = ram_data_o.read();
 
+    ram_data_i.write(sc_lv<32>('Z'));
     ram_address.write(sc_lv<32>('Z'));
     ram_rd_requests[0].write(false);
     ram_wr_requests[0].write(false);

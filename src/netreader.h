@@ -16,11 +16,13 @@ SC_MODULE(NetReader) {
 	sc_in_rv<32> data_i;
 	sc_in_rv<32> address_i;
 	sc_out<uint32_t> data_o;
+
     sc_out<bool> rd_o;
     sc_out<bool> wr_o;
 
 	sc_in<bool> read_reqs[CORE_NUMBER + 1];
 	sc_in<bool> write_reqs[CORE_NUMBER + 1];
+	sc_out<bool> is_your_discrete[CORE_NUMBER + 1];
 
     SC_CTOR(NetReader) {
         SC_THREAD(execute);
