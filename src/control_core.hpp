@@ -69,7 +69,7 @@ SC_MODULE(ControlCore) {
 	std::vector<uint16_t> layers;
 	std::queue<ComputingTask> q;
 	uint16_t done_layers;
-	int8_t free;
+	int8_t free_c;
 };
 
 #endif

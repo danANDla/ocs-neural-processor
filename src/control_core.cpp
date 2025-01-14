@@ -126,8 +126,6 @@ void ControlCore::show_result() {
 		offset  += layers[i];
 	}
 
-	int8_t res = 0;
-
 	float ma;
 	uint32_t neuron_val ;
 	float floated_neuron;
@@ -142,7 +140,6 @@ void ControlCore::show_result() {
 	floated_neuron = *((float*) &neuron_val);
 	if(floated_neuron > ma) {
 		ma = floated_neuron;
-		res = 1;	
 		sprintf(buff, "is triangle");
 	}
 	std::cout << floated_neuron << " ";
@@ -151,7 +148,6 @@ void ControlCore::show_result() {
 	floated_neuron = *((float*) &neuron_val);
 	if(floated_neuron > ma) {
 		ma = floated_neuron;
-		res = 2;	
 		sprintf(buff, "is square");
 	}
 	std::cout << floated_neuron << " ";
@@ -172,9 +168,9 @@ void ControlCore::assign_task() {
     prev_layer.write(task_for_c.prev_layer_addr);
     resulting_neuron_addr.write(task_for_c.result_address);
 
-    tasks[free].write(true);
-	while(cores_finished[free].read() != false) wait();
-    tasks[free].write(false);
+    tasks[free_c].write(true);
+	while(cores_finished[free_c].read() != false) wait();
+    tasks[free_c].write(false);
 }
 
 void ControlCore::fsm_controller() {
@@ -208,7 +204,8 @@ void ControlCore::fsm_controller() {
         case WAITING_FREE_COMPUTING_CORE:
 			for(size_t i = 0; i < CORE_NUMBER; ++i) {
 				if(core[i]->is_finished.read() == true) {
-                state = CHECKING_ANY_TASK_IN_Q;
+					state = CHECKING_ANY_TASK_IN_Q;
+					free_c = i;
 				}
 			}
             break;
