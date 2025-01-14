@@ -5,8 +5,9 @@
 #include "systemc.h"
 #include <cinttypes>
 
-#define CONCURRENT_DEVICES_LOG 2
-#define MEM_SIZE 2048
+#define CORE_NUMBER 2
+
+#define MEM_SIZE 1024*2 
 
 SC_MODULE(NetReader) {
   public:
@@ -18,8 +19,8 @@ SC_MODULE(NetReader) {
     sc_out<bool> rd_o;
     sc_out<bool> wr_o;
 
-    sc_in<bool> read_request1, write_request1;
-    sc_in<bool> read_request2, write_request2;
+	sc_in<bool> read_reqs[CORE_NUMBER + 1];
+	sc_in<bool> write_reqs[CORE_NUMBER + 1];
 
     SC_CTOR(NetReader) {
         SC_THREAD(execute);
@@ -35,12 +36,13 @@ SC_MODULE(NetReader) {
 	int8_t write_image_to_mem(std::vector<uint8_t> & pixels);
 
   private:
-    uint32_t m_data[MEM_SIZE];
-
-	void handle_req(sc_bv<CONCURRENT_DEVICES_LOG> selector);
 	void handle_write_req();
 	void handle_read_req();
 	void execute();
+	void poll_requests();
+
+	uint16_t discrete;
+    uint32_t m_data[MEM_SIZE];
 };
 
 

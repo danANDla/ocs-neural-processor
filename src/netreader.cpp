@@ -1,14 +1,11 @@
 #include "netreader.h"
 #include <iostream>
 
-void NetReader::handle_req(sc_bv<CONCURRENT_DEVICES_LOG> selector) {
-	uint sel = selector.to_uint();
-	if(sel == 1) {
-		if(read_request1.read()) {
-			handle_read_req();
-		} else if (write_request1.read()) {
-			handle_write_req();
-		}
+void NetReader::poll_requests() {
+	if(read_reqs[discrete]) {
+		handle_read_req();
+	} else if(write_reqs[discrete]) {
+		handle_write_req();
 	}
 }
 
@@ -18,11 +15,12 @@ void NetReader::execute() {
 			rd_o.write(false);
 			wr_o.write(false);
 			data_o.write(0);
+			discrete = 0;
 		} else {
 			if(!(rd_o.read() || wr_o.read())) {
-				if(read_request1.read() || write_request1.read()) {
-					handle_req(1);
-				}
+				poll_requests();
+				discrete++;
+				if(discrete == CORE_NUMBER + 1) discrete = 0;
 			}
 		}
 		wait();
@@ -39,7 +37,6 @@ void NetReader::handle_read_req() {
 }
 
 void NetReader::handle_write_req() {
-	std::cout << "HANDLING WRITE REQ" << std::endl;
 	wr_o.write(true);
 	uint64_t rd_addr = address_i.read().to_uint64();
 	uint64_t data = data_i.read().to_uint64();

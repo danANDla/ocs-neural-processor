@@ -31,5 +31,6 @@ SC_MODULE(BenchComputingNetReader){
 
 void netreadertest();
 void netreader_computing_test();
+void control_test();
 
 #endif // _TESTBENCHES_H
