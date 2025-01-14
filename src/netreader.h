@@ -32,6 +32,7 @@ SC_MODULE(NetReader) {
     };
 
 	int8_t write_net_to_mem(const NNetwork* const net);
+	int8_t write_image_to_mem(std::vector<uint8_t> & pixels);
 
   private:
     uint32_t m_data[MEM_SIZE];

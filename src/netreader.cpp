@@ -39,6 +39,7 @@ void NetReader::handle_read_req() {
 }
 
 void NetReader::handle_write_req() {
+	std::cout << "HANDLING WRITE REQ" << std::endl;
 	wr_o.write(true);
 	uint64_t rd_addr = address_i.read().to_uint64();
 	uint64_t data = data_i.read().to_uint64();
@@ -68,6 +69,17 @@ int8_t NetReader::write_net_to_mem(const NNetwork* const net) {
 		mem[offset] = (uint32_t) net->layers_sizes[forward_layer];
 		forward_layer++;
 		offset++;
+	}
+	return 1;
+}
+
+int8_t NetReader::write_image_to_mem(std::vector<uint8_t>& pixels) {
+	uint32_t* mem =  (uint32_t*) m_data;
+	size_t offset = MEM_SIZE - 1;
+
+	for(uint8_t p: pixels) {
+		*((float*)(mem + offset)) = float(p - '0');
+		offset--;
 	}
 	return 1;
 }

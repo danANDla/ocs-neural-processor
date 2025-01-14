@@ -17,4 +17,4 @@ typedef struct {
 DataSet read_train_set_from_file(const std::string fname);
 NNetwork read_network_from_file(const std::string fname);
 int8_t write_net_to_mem(void* const _mem, const NNetwork* const net);
-int8_t write_image_to_mem(void* const _mem, const std::string fname, const size_t first_addr);
+std::vector<std::uint8_t> read_image_from_file(const std::string fname);

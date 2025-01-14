@@ -112,6 +112,7 @@ void BenchComputingNetReader::computing_core_readlayer_test() {
 
 void netreader_computing_test(){
 	NNetwork good_net = read_network_from_file("/home/danandla/BOTAY/byk_ocs/labs/lab1/networks/geometra.txt");
+	std::vector<uint8_t> img = read_image_from_file("/home/danandla/BOTAY/byk_ocs/labs/lab3/ocs-neural-processor/images/generated/i1");
 
     sc_clock clk("clk", sc_time(10, SC_NS));
 	sc_signal_rv<32> address;
@@ -122,9 +123,10 @@ void netreader_computing_test(){
 	sc_signal<bool> rd_o, wr_o, rd_req1, wr_req1, rd_req2, wr_req2;
 
 	sc_signal<uint32_t> cords;
-	cords.write(0x00020002);
-	sc_signal<uint32_t> prev_layer;
+	cords.write(0x00010000);
+	sc_signal<uint32_t> prev_layer, resulting_neuron_addr;
 	prev_layer.write(0x000007ff);
+	resulting_neuron_addr.write(0x000007ff - 49);
 
 	BenchComputingNetReader bench("bench");
 	bench.rst(rst);
@@ -144,6 +146,7 @@ void netreader_computing_test(){
 	reader.read_request2(rd_req2);
 	reader.write_request2(wr_req2);
 	reader.write_net_to_mem(&good_net);
+	reader.write_image_to_mem(img);
 
 	ComputingCore computing("computing");
 	computing.clk_i(clk);
@@ -151,6 +154,7 @@ void netreader_computing_test(){
 	computing.is_task_i(task);
 	computing.this_neuron_cords_i(cords);
 	computing.prev_layer_address_i(prev_layer);
+	computing.res_address_i(resulting_neuron_addr);
 
 	computing.ram_addr(address);
 	computing.ram_data_read(data_o);
