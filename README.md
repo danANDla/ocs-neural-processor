@@ -1,5 +1,7 @@
 # ocs-neural-processor
 
+[**PDF отчёт**](https://github.com/danANDla/ocs-neural-processor/blob/main/ocs_lab3_report.pdf) 
+
 ## Краткое описание модулей
 
 - Вычисления производятся на множестве ядер COMPUTING, которыми управляет CONTROL.
